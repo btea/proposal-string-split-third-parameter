@@ -1,50 +1,60 @@
-# template-for-proposals
+# Proposal `String.prototype.split` add a third parameter
 
-A repository template for ECMAScript proposals.
+Proposal to add a third parameter `collect` to the string split method.
 
-## Before creating a proposal
+## Motivation
 
-Please ensure the following:
-  1. You have read the [process document](https://tc39.github.io/process-document/)
-  1. You have reviewed the [existing proposals](https://github.com/tc39/proposals/)
-  1. You are aware that your proposal requires being a member of TC39, or locating a TC39 delegate to “champion” your proposal
+In daily development, using split to cut strings is a very common scenario.
 
-## Create your proposal repo
+Based on the current implementation, it can meet most scenarios. But for some special cases, multiple steps are required to get the desired result.
 
-Follow these steps:
-  1. Click the green [“use this template”](https://github.com/tc39/template-for-proposals/generate) button in the repo header. (Note: Do not fork this repo in GitHub's web interface, as that will later prevent transfer into the TC39 organization)
-  1. Update ecmarkup and the biblio to the latest version: `npm install --save-dev ecmarkup@latest && npm install --save-dev --save-exact @tc39/ecma262-biblio@latest`.
-  1. Go to your repo settings page:
-      1. Under “General”, under “Features”, ensure “Issues” is checked, and disable “Wiki”, and “Projects” (unless you intend to use Projects)
-      1. Under “Pull Requests”, check “Always suggest updating pull request branches” and “automatically delete head branches”
-      1. Under the “Pages” section on the left sidebar, and set the source to “deploy from a branch”, select “gh-pages” in the branch dropdown, and then ensure that “Enforce HTTPS” is checked.
-      1. Under the “Actions” section on the left sidebar, under “General”, select “Read and write permissions” under “Workflow permissions” and click “Save”
-  1. [“How to write a good explainer”][explainer] explains how to make a good first impression.
+For example, I have a string `name=hello=world`, and I want to split the string into two strings (representing key and value respectively, that is, the value can tontain `=`).
 
-      > Each TC39 proposal should have a `README.md` file which explains the purpose
-      > of the proposal and its shape at a high level.
-      >
-      > ...
-      >
-      > The rest of this page can be used as a template ...
+Based on the current API, we can achieve the requirements through the following code:
 
-      Your explainer can point readers to the `index.html` generated from `spec.emu`
-      via markdown like
+```javascript
+const [key, ...value] = 'name=hello=world'.split('=')
+const realValue = value.join('=') // hello=world
+```
+The above method works fine when the specific structure of the string is known, but in some cases, the result may not be what you expect.
 
-      ```markdown
-      You can browse the [ecmarkup output](https://ACCOUNT.github.io/PROJECT/)
-      or browse the [source](https://github.com/ACCOUNT/PROJECT/blob/HEAD/spec.emu).
-      ```
+eg:
+```javascript
+const [key, ...value] = 'name'.split('=')
+const realValue = value.join('=') // ''
+```
 
-      where *ACCOUNT* and *PROJECT* are the first two path elements in your project's Github URL.
-      For example, for github.com/**tc39**/**template-for-proposals**, *ACCOUNT* is “tc39”
-      and *PROJECT* is “template-for-proposals”.
+At this time, the value obtained is an empty string, which does not meet the expected `undefined`. If a fallback is made for this return result in the subsequent logic, such as `const v = realValue ?? null`, then there may be problems with subsequent logical operations.
 
+In order to meet expectations, we have to do additional judgment logic to handle `realValue = value.length ? value.join('=') : undefined`,  which seems a bit cumbersome.
 
-## Maintain your proposal repo
+Therefore, I think it would be helpful to provide a third parameter to determine whether the last string returned is the set of remaining characters.
 
-  1. Make your changes to `spec.emu` (ecmarkup uses HTML syntax, but is not HTML, so I strongly suggest not naming it “.html”)
-  1. Any commit that makes meaningful changes to the spec, should run `npm run build` to verify that the build will succeed and the output looks as expected.
-  1. Whenever you update `ecmarkup`, run `npm run build` to verify that the build will succeed and the output looks as expected.
+## Core features
 
-  [explainer]: https://github.com/tc39/how-we-work/blob/HEAD/explainer.md
+Add a third parameter to the `String.prototype.split(sperator[, limit[, collect]])` method.
+
+eg:
+
+```javascript
+const str = 'name=hello=world';
+const str1 = 'name';
+
+// Before the proposal
+const [key, ...value] = str.split('=');
+const realValue = value.length ? value.join('=') : undefined; // hello=world
+
+const [key1, ...value1] = str1.split('=');
+const realValue1 = value1.length ? value.join('=') : undefined; // undefined
+
+// In the proposal
+const [key2, value2] = str.split('=', 2, true)
+console.log(value2) // hello=world
+
+const [key3, value3] = str.split('=', 2, true)
+console.log(value3) // undefined
+```
+
+## Related
+- [String.prototype.split](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split)
+

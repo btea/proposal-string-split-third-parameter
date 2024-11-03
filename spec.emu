@@ -4,28 +4,35 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: Proposal Title Goes Here
-stage: -1
-contributors: Your Name(s) Here
+title: Proposal `String.prototype.split` add a third parameter
+stage: 0
+contributors: btea
 </pre>
 
 <emu-clause id="sec-demo-clause">
-  <h1>This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
+  <h1>String.prototype.split ( _sperator_ [ , _limit_ [ , _collect_ ] ] )</h1>
+  <p>Proposal `String.prototype.split` add a third parameter.</p>
   <emu-alg>
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*<sub>ℤ</sub>.
+    1. Let collect be *undefined*.
+    1. If IsAccepted(collect) is *true*, then
+      a. Let i be 0.
+      b. Let j be StringIndexOf(S, R, 0).
+      c. Repeat, while j is not NOT-FOUND,
+        a. Let T be the substring of S from i to j.
+        b. Append T to substrings.
+        c. Let L be the length of substrings.
+        d. If L === lim, Let T be the substring of S from i to S.length, return CreateArrayFromList(substrings).
+        e. If the number of elements in substrings is lim, return CreateArrayFromList(substrings).
+        f. Set i to j + speratorLength.
+        g. set j to StringIndexOf(S, R, i).
     1. Else,
-      1. Let _stage_ be *-1*<sub>ℤ</sub>.
-    1. Return ? ToString(_stage_).
+      a. Return CreateArrayFromList(substrings).
   </emu-alg>
 </emu-clause>
-
 <emu-clause id="sec-is-accepted" type="abstract operation">
   <h1>
       IsAccepted (
-        _proposal_: an ECMAScript language value
+        collect: an ECMAScript language value
       ): a Boolean
   </h1>
   <dl class="header">
@@ -33,7 +40,7 @@ contributors: Your Name(s) Here
     <dd>Tells you if the proposal was accepted</dd>
   </dl>
   <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
+    1. If collect is not accepted, return *false*.
     1. Return *true*.
   </emu-alg>
 </emu-clause>
